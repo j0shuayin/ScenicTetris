@@ -18,12 +18,21 @@ export class tetris{
         this.score = 0;
         this.x = 6;
         this.y = 19;
-        this.block = 0;
+        this.block = Math.floor(Math.random() * 7);
         this.rotation = 0;
+
+        this.bag = [];
+        this.bag_size = 6;
+        for (let i = 0; i < 7; i++) {
+            if (i != this.block) {
+                this.bag.push(i);
+            }
+        }
+        
 
         //order of pieces: IOTLJSZ
         this.config =  [
-            [[[-1,2],[0,2],[1,2],[2,2]],[[1,0],[1,1],[1,2],[1,3]],[[-1,1],[0,1],[1,1],[2,1]],[[1,0],[1,1],[1,2],[1,3]]],
+            [[[-1,1],[0,1],[1,1],[2,1]],[[1,2],[1,1],[1,0],[1,-1]],[[-1,0],[0,0],[1,0],[2,0]],[[0,2],[0,1],[0,0],[0,-1]]],
             [[[1,0],[1,1],[0,0],[0,1]],[[1,0],[1,1],[0,0],[0,1]],[[1,0],[1,1],[0,0],[0,1]],[[1,0],[1,1],[0,0],[0,1]]],
             [[[-1,0],[0,0],[0,1],[1,0]],[[0,0],[0,1],[0,-1],[1,0]],[[-1,0],[0,0],[0,-1],[1,0]],[[-1,0],[0,1],[0,0],[0,-1]]],
             [[[-1,1],[0,1],[1,1],[1,2]],[[0,2],[0,1],[0,0],[1,0]],[[-1,1],[0,1],[1,1],[-1,0]],[[0,2],[0,1],[0,0],[-1,2]]],
@@ -32,6 +41,23 @@ export class tetris{
             [[[-1,1],[0,1],[0,0],[1,0]],[[1,1],[1,0],[0,0],[0,-1]],[[-1,0],[0,0],[0,-1],[1,-1]],[[-1,-1],[-1,0],[0,0],[0,1]]]
         ];
         this.colors = ["01EDFA", "FEFB34", "DD0AB2", "FF6F00", "2B35AF", "66FF01", "EE4B2B"]
+        this.i_kick = [[[-2,0],[1,0],[-2,-1],[1,2]],
+                       [[2,0],[-1,0],[2,1],[-1,-2]],
+                       [[-1,0],[2,0],[-1,2],[2,-1]],
+                       [[1,0],[-2,0],[1,-2],[-2,1]],
+                       [[2,0],[-1,0],[2,1],[-1,-2]],
+                       [[-2,0],[1,0],[-2,-1],[1,2]],
+                       [[1,0],[-2,0],[1,-2],[-2,1]],
+                       [[-1,0],[2,0],[-1,2],[2,-1]]]
+        
+        this.kick =   [[[-1,0],[-1,1],[0,-2],[-1,-2]],
+                       [[1,0],[1,1],[0,2],[1,2]],
+                       [[1,0],[1,-1],[0,2],[1,2]],
+                       [[-1,0],[-1,1],[0,-2],[-1,-2]],
+                       [[1,0],[1,1],[0,-2],[1,-2]],
+                       [[-1,0],[-1,-1],[0,2],[-1,2]],
+                       [[-1,0],[-1,-1],[0,2],[-1,2]],
+                       [[1,0],[1,1],[0,-2],[1,-2]]]
 
     }
     checkcollision(x, y, rotation) {
@@ -67,20 +93,32 @@ export class tetris{
             }
         }
     }
+    getblock() {
+        if (this.bag_size === 0) {
+            this.bag = [0, 1, 2, 3, 4, 5, 6]
+            this.bag_size = 7;
+        }
+        let x = Math.floor(Math.random() * this.bag_size);
+        let piece = this.bag[x];
+        this.bag_size = this.bag_size - 1;
+        this.bag.splice(x, 1);
+        console.log(piece)
+        console.log(this.bag)
+        return piece;
+    }
     placeblock() {
         for(let i = 0; i < 4; i++) {
             this.grid[this.x+this.config[this.block][this.rotation][i][0]][this.y+this.config[this.block][this.rotation][i][1]] = this.block;
         }
         this.x = 6;
         this.y = 19;
-        this.block = Math.floor(Math.random()*7);
+        this.block = this.getblock();
         this.rotation = 0;
     }
     tick() {
         if(this.checkcollision(this.x, this.y-1, this.rotation)) {
             this.y--;
         } else {
-            console.log("placed")
             this.placeblock();
             this.clearlines();
         }
@@ -104,12 +142,43 @@ export class tetris{
         if(this.checkcollision(this.x, this.y, newRotation)) {
             this.rotation = newRotation;
         }
+        else {
+            if (this.block === 1) return;
+
+            let kicks = (this.block === 0) ? this.i_kick[this.rotation*2] : this.kick[this.rotation*2]
+            for (let i = 0; i < 4; i++) {
+                let nx = this.x + kicks[i][0];
+                let ny = this.y + kicks[i][1];
+                if (this.checkcollision(nx, ny, newRotation)) {
+                    this.x = nx;
+                    this.y = ny;
+                    this.rotation = newRotation;
+                    return;
+                }
+            }
+        }
     }
     rotateccw() {
         let newRotation = (this.rotation+3)%4;
-        console.log("rotating")
         if(this.checkcollision(this.x, this.y, newRotation)) {
             this.rotation = newRotation;
+        }
+        else {
+            if (this.block === 1) return;
+            console.log("attempting kick")
+
+            let kicks = (this.block === 0) ? this.i_kick[(this.rotation*2+7)%8] : this.kick[(this.rotation*2+7)%8]
+            for (let i = 0; i < 4; i++) {
+                let nx = this.x + kicks[i][0];
+                let ny = this.y + kicks[i][1];
+                if (this.checkcollision(nx, ny, newRotation)) {
+                    console.log("kicked!")
+                    this.x = nx;
+                    this.y = ny;
+                    this.rotation = newRotation;
+                    return;
+                }
+            }
         }
     }
 }

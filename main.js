@@ -346,7 +346,7 @@ export class Main extends Base_Scene {
 
         super.display(context, program_state);
 
-        if (t - this.cur > 0.1) {
+        if (t - this.cur > 0.5) {
             this.tetris.tick();
             this.cur = t;
         }

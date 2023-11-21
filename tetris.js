@@ -21,14 +21,20 @@ export class tetris{
         this.block = Math.floor(Math.random() * 7);
         this.rotation = 0;
 
-        this.bag = [];
-        this.bag_size = 6;
+        this.hold = -1;
+        this.held = false;
+        this.queue = [];
+
+        let bag = []
         for (let i = 0; i < 7; i++) {
-            if (i != this.block) {
-                this.bag.push(i);
-            }
+            if (i != this.block) bag.push(i);
         }
-        
+        for (let i = 6; i > 0; i--) {
+            let x = Math.floor(Math.random() * i);
+            let p = bag[x];
+            this.queue.push(p);
+            bag.splice(x, 1);
+        }
 
         //order of pieces: IOTLJSZ
         this.config =  [
@@ -94,16 +100,17 @@ export class tetris{
         }
     }
     getblock() {
-        if (this.bag_size === 0) {
+        if (this.queue.length < 6) {
             this.bag = [0, 1, 2, 3, 4, 5, 6]
-            this.bag_size = 7;
+            for (let i = 7; i > 0; i--) {
+                let x = Math.floor(Math.random() * i);
+                let p = this.bag[x];
+                this.queue.push(p);
+                this.bag.splice(x, 1);
+            }
         }
-        let x = Math.floor(Math.random() * this.bag_size);
-        let piece = this.bag[x];
-        this.bag_size = this.bag_size - 1;
-        this.bag.splice(x, 1);
-        console.log(piece)
-        console.log(this.bag)
+        let piece = this.queue[0];
+        this.queue.splice(0, 1);
         return piece;
     }
     placeblock() {
@@ -114,6 +121,7 @@ export class tetris{
         this.y = 19;
         this.block = this.getblock();
         this.rotation = 0;
+        this.held = false;
     }
     tick() {
         if(this.checkcollision(this.x, this.y-1, this.rotation)) {
@@ -132,6 +140,21 @@ export class tetris{
     moveright() {
         if(this.checkcollision(this.x+1, this.y, this.rotation))
             this.x++;
+    }
+    hold_piece() {
+        if (this.held === true) return;
+        if (this.hold === -1) {
+            this.hold = this.block;
+            this.block = this.getblock();
+        }
+        else {
+            let temp = this.block;
+            this.block = this.hold;
+            this.hold = temp;
+        }
+        this.x = 6;
+        this.y = 19;
+        this.held = true;
     }
     movedown() {
         if(this.checkcollision(this.x, this.y-1, this.rotation))
@@ -165,14 +188,12 @@ export class tetris{
         }
         else {
             if (this.block === 1) return;
-            console.log("attempting kick")
 
             let kicks = (this.block === 0) ? this.i_kick[(this.rotation*2+7)%8] : this.kick[(this.rotation*2+7)%8]
             for (let i = 0; i < 4; i++) {
                 let nx = this.x + kicks[i][0];
                 let ny = this.y + kicks[i][1];
                 if (this.checkcollision(nx, ny, newRotation)) {
-                    console.log("kicked!")
                     this.x = nx;
                     this.y = ny;
                     this.rotation = newRotation;

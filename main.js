@@ -204,6 +204,9 @@ export class Main extends Base_Scene {
         this.key_triggered_button("rotate CW", ["x"], () => {
             this.tetris.rotatecw();
         });
+        this.key_triggered_button("hold", ["q"], () => {
+            this.tetris.hold_piece();
+        });
     }
 
     draw_box(context, program_state, x, y, clr) {
@@ -232,18 +235,46 @@ export class Main extends Base_Scene {
         }
     }
 
-    drawPiece(context, program_state, tet) {
+    drawPiece(context, program_state, tet, opt) {
         if (tet === undefined) return;
-        let x = tet.x;
-        let y = tet.y;
-        let dxy = tet.config[tet.block][tet.rotation];
-        let clr = tet.colors[tet.block];
+        let x, y, dxy, clr;
+        if (opt === -1) {
+            x = tet.x;
+            y = tet.y;
+            dxy = tet.config[tet.block][tet.rotation];
+            clr = tet.colors[tet.block];
+        }
+        else if (opt === -2) {
+            x = -2;
+            y = 17.5;
+            dxy = tet.config[tet.hold][0];
+            clr = tet.colors[tet.hold];
+        }
+        else {
+            x = 15;
+            y = 17.5 - 4*opt[0];
+            dxy = tet.config[opt[1]][0];
+            clr = tet.colors[opt[1]];
+        }
         for (let i = 0; i < 4; i++) {
             let nx = x + dxy[i][0];
             let ny = y + dxy[i][1];
             let model_transform = this.downscale_mat4.times(Mat4.translation(-nx*2, ny*2, 0).times(Mat4.identity()))
             this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color: hex_color(clr)}));
         }
+    }
+
+    drawQueue(context, program_state) {
+        if (this.tetris === undefined) return;
+        for (let i = 0; i < 5; i++) {
+            this.drawPiece(context, program_state, this.tetris, [i, this.tetris.queue[i]]);
+        }
+    }
+
+    drawHold(context, program_state) {
+        if (this.tetris === undefined) return;
+        if (this.tetris.hold === -1) return;
+        this.drawPiece(context, program_state, this.tetris, -2)
     }
 
     drawTree(context, program_state, matrix){
@@ -350,7 +381,7 @@ export class Main extends Base_Scene {
             this.tetris.tick();
             this.cur = t;
         }
-        this.drawPiece(context, program_state, this.tetris);
+        this.drawPiece(context, program_state, this.tetris, -1);
         
 
         // this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(this.pos), this.materials.plastic.override({color: hex_color("#DD0AB2")}));
@@ -360,6 +391,8 @@ export class Main extends Base_Scene {
 
         this.drawGrid(context, program_state);
         this.drawBoard(context, program_state, this.tetris.grid);
+        this.drawQueue(context, program_state);
+        this.drawHold(context, program_state);
 
 
 

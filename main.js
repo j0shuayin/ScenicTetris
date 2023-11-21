@@ -297,10 +297,9 @@ export class Main extends Base_Scene {
         let light_position = vec4(0, 10, -25, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 0)];
         if (self.dayTimeLeft >= 0){
-            console.log("sun is existing")
             self.nightTimeLeft = nightScaling;
-            let sun_scale = Mat4.scale(1.5, 1.5, 1.5);
-            let sun_translation = Mat4.translation(0, 0,70).times(sun_scale);
+            let sun_scale = Mat4.scale(3, 3, 3);
+            let sun_translation = Mat4.translation(0, 0,210).times(sun_scale);
             let sun_rotation = Mat4.rotation(-Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime), 1, 0, 0).times(sun_translation);
             this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(sun_rotation), this.materials.sun);
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 10**(12*Math.sin((self.dayTimeLeft) / self.totalDayTime * Math.PI)))];

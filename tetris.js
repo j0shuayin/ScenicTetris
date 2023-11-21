@@ -1,12 +1,16 @@
-class tetris{
+export class tetris{
     constructor(){
-        this.grid[14][24];
+        this.grid[14][22];
         for(let i = 0; i < 14; i++) {
-            for(let j = 0; j < 24; j++) {
-                if(i < 2 || i > 11 || j < 2 || j > 21)
+            for(let j = 0; j < 22; j++) {
+                if(i < 2 || i > 11 || j < 2) {
                     this.grid[i][j] = 1;
-                else
+                }
+                    
+                else {
                     this.grid[i][j] = 0;
+                }
+                    
             }
         }
         this.score = 0;

@@ -1,4 +1,5 @@
 import {defs, tiny} from './examples/common.js';
+import {tetris} from './tetris.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -171,6 +172,7 @@ export class Main extends Base_Scene {
         this.pos = Mat4.translation(-10,40,0);
         this.rot = Mat4.identity();
         this.cur = 0;
+        this.tetris = new tetris();
     }
     set_colors() {
         // TODO:  Create a class member variable to store your cube's colors.
@@ -204,16 +206,11 @@ export class Main extends Base_Scene {
         });
     }
 
-    draw_box(context, program_state, model_transform, x) {
-        // TODO:  Helper function for requirement 3 (see hint).
-        //        This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
-        // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
-
-
-        return model_transform;
+    draw_box(context, program_state, x, y, clr) {
+        this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(Mat4.translation(x, y, 0).times(Mat4.identity)), this.materials.plastic.override({color: hex_color(clr)}));
     }
 
-    draw_grid(context, program_state) {
+    drawGrid(context, program_state) {
         let model_transform = Mat4.identity();
 
         for (var y = 0; y < 20; y++) {
@@ -221,6 +218,16 @@ export class Main extends Base_Scene {
             for (var x = 0; x < 10; x++) {
                 this.shapes.outline.draw(context, program_state, this.downscale_mat4.times(model_transform), this.white, "LINES");
                 model_transform = Mat4.translation(-2, 0, 0).times(model_transform);
+            }
+        }
+    }
+
+    drawBoard(context, program_state, grid) {
+        for (var i = 0; i < 14; i++) {
+            for (var j = 0; j < 24; j++) {
+                if (grid[i][j][0] == 1) {
+                    this.draw_box(context, program_state, grid, i*2, j*2, "#000000");
+                }
             }
         }
     }
@@ -289,7 +296,7 @@ export class Main extends Base_Scene {
         }
     }
 
-
+   
 
 
     display(context, program_state) {
@@ -337,7 +344,8 @@ export class Main extends Base_Scene {
         this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(this.pos.times(this.rot).times(Mat4.translation(2,0,0))), this.materials.plastic.override({color: hex_color("#DD0AB2")}));
         this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(this.pos.times(this.rot).times(Mat4.translation(0,2,0))), this.materials.plastic.override({color: hex_color("#DD0AB2")}));
 
-        this.draw_grid(context, program_state);
+        this.drawGrid(context, program_state);
+        this.drawBoard(context, program_state, this.tetris.grid);
 
 
 

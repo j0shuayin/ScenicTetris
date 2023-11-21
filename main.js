@@ -185,27 +185,30 @@ export class Main extends Base_Scene {
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("move left", ["j"], () => {
+        this.key_triggered_button("move left", ["ArrowLeft"], () => {
             this.tetris.moveleft();
         });
         // Add a button for controlling the scene.
-        this.key_triggered_button("move right", ["l"], () => {
+        this.key_triggered_button("move right", ["ArrowRight"], () => {
             this.tetris.moveright();
         });
         // this.key_triggered_button("move down", ["k"], () => {
         //     this.pos = Mat4.translation(0,-2,0).times(this.pos);
         // });
-        this.key_triggered_button("move down", ["k"], () => {
+        this.key_triggered_button("move down", ["ArrowDown"], () => {
             this.tetris.movedown();
         });
-        this.key_triggered_button("rotate CCW", ["z"], () => {
+        this.key_triggered_button("rotate CCW", ["w"], () => {
             this.tetris.rotateccw();
         });
-        this.key_triggered_button("rotate CW", ["x"], () => {
+        this.key_triggered_button("rotate CW", ["ArrowUp"], () => {
             this.tetris.rotatecw();
         });
         this.key_triggered_button("hold", ["q"], () => {
             this.tetris.hold_piece();
+        });
+        this.key_triggered_button("restart", ["r"], () => {
+            this.tetris = new tetris();
         });
     }
 

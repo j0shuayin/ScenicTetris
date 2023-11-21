@@ -18,6 +18,7 @@ export class tetris{
         this.score = 0;
         this.x = 6;
         this.y = 19;
+        this.ghosty = 19;
         this.block = Math.floor(Math.random() * 7);
         this.rotation = 0;
 
@@ -78,24 +79,25 @@ export class tetris{
         return true;
     }
     clearlines() {
-        for(let y = 2; y < 24; y++) {
-            let fullLine = true;
+        for(let y = 0; y < 24; y++) {
+            var fullLine = true;
             for(let x = 2; x < 12; x++) {
-                if(this.grid[x][y] === -1) 
+                if(this.grid[x][y] == -1) 
                     fullLine = false;
             }
-            if(fullLine) {
+            if(fullLine == true) {
                 for(let i = 2; i < 12; i++) 
                     this.grid[i][y] = -1;
                 
-                for(let j = y+1; j < 20; j++) {
+                for(let j = y; j < 23; j++) {
                     for(let i = 2; i < 12; i++) {
                         this.grid[i][j] = this.grid[i][j+1];
                     }
                 }
                 for(let i = 2; i < 12; i++) 
-                    this.grid[i][19] = 0;
+                    this.grid[i][23] = -1;
                 this.score++;
+                y--;
             }
         }
     }
@@ -126,16 +128,27 @@ export class tetris{
     tick() {
         if(this.checkcollision(this.x, this.y-1, this.rotation)) {
             this.y--;
+            return false;
         } else {
             this.placeblock();
             this.clearlines();
+            return true;
+        }
+    }
+    drop() {
+        while(!this.tick()) {}
+    }
+    getGhosty() {
+        for(let i = this.y; i >= 0; i--) {
+            if(!this.checkcollision(this.x, i, this.rotation)) {
+                return i+1;
+            }
         }
     }
     moveleft() {
         if(this.checkcollision(this.x-1, this.y, this.rotation)) {
             this.x--;
         }
-            
     }
     moveright() {
         if(this.checkcollision(this.x+1, this.y, this.rotation))

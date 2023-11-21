@@ -135,7 +135,7 @@ export class tetris{
             return true;
         }
     }
-    drop() {
+    harddrop() {
         while(!this.tick()) {}
     }
     getGhosty() {

@@ -207,6 +207,9 @@ export class Main extends Base_Scene {
         this.key_triggered_button("hold", ["q"], () => {
             this.tetris.hold_piece();
         });
+        this.key_triggered_button("hard drop", [" "], () => {
+            this.tetris.harddrop();
+        });
         this.key_triggered_button("restart", ["r"], () => {
             this.tetris = new tetris();
         });

@@ -246,6 +246,12 @@ export class Main extends Base_Scene {
             y = tet.y;
             dxy = tet.config[tet.block][tet.rotation];
             clr = tet.colors[tet.block];
+            for (let i = 0; i < 4; i++) {
+                let nx = x + dxy[i][0];
+                let ghost_y = tet.getGhosty() + dxy[i][1];
+                let ghost_transform = this.downscale_mat4.times(Mat4.translation(-nx*2, ghost_y*2,0).times(Mat4.scale(0.99, 0.99, 0.99)))
+                this.shapes.cube.draw(context, program_state, ghost_transform, this.materials.plastic.override({color: hex_color(clr, 0.5)}));
+            }
         }
         else if (opt === -2) {
             x = -2;
@@ -262,8 +268,11 @@ export class Main extends Base_Scene {
         for (let i = 0; i < 4; i++) {
             let nx = x + dxy[i][0];
             let ny = y + dxy[i][1];
+            let ghost_y = tet.getGhosty() + dxy[i][1];
             let model_transform = this.downscale_mat4.times(Mat4.translation(-nx*2, ny*2, 0).times(Mat4.identity()))
+            let ghost_transform = this.downscale_mat4.times(Mat4.translation(-nx*2, ghost_y*2).times(Mat4.identity()))
             this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color: hex_color(clr)}));
+            this.shapes.cube.draw(context, program_state, ghost_transform, this.materials.plastic.override({color: hex_color(clr)}));
         }
     }
 

@@ -140,10 +140,11 @@ export class tetris{
     }
     getGhosty() {
         for(let i = this.y; i >= 0; i--) {
-            if(!this.checkcollision(this.x, i, this.rotation)) {
-                return i+1;
+            if(!this.checkcollision(this.x, i-1, this.rotation)) {
+                return i;
             }
         }
+        return -1;
     }
     moveleft() {
         if(this.checkcollision(this.x-1, this.y, this.rotation)) {

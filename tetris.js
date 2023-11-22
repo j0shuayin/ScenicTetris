@@ -216,4 +216,7 @@ export class tetris{
             }
         }
     }
+    getbottom() {
+        return !this.checkcollision(this.x, this.y-1, this.rotation);
+    }
 }

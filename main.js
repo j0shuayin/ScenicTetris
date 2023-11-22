@@ -172,6 +172,8 @@ export class Main extends Base_Scene {
         this.pos = Mat4.translation(-10,40,0);
         this.rot = Mat4.identity();
         this.cur = 0;
+        this.t = 0;
+        this.buffer = 0;
         this.tetris = new tetris();
     }
     set_colors() {
@@ -187,10 +189,18 @@ export class Main extends Base_Scene {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         this.key_triggered_button("move left", ["ArrowLeft"], () => {
             this.tetris.moveleft();
+            if(this.tetris.getbottom()) {
+                this.cur = this.t;
+                this.buffer++;
+            }
         });
         // Add a button for controlling the scene.
         this.key_triggered_button("move right", ["ArrowRight"], () => {
             this.tetris.moveright();
+            if(this.tetris.getbottom()) {
+                this.cur = this.t;
+                this.buffer++;
+            }
         });
         // this.key_triggered_button("move down", ["k"], () => {
         //     this.pos = Mat4.translation(0,-2,0).times(this.pos);
@@ -200,9 +210,17 @@ export class Main extends Base_Scene {
         });
         this.key_triggered_button("rotate CCW", ["w"], () => {
             this.tetris.rotateccw();
+            if(this.tetris.getbottom()) {
+                this.cur = this.t;
+                this.buffer++;
+            }
         });
         this.key_triggered_button("rotate CW", ["ArrowUp"], () => {
             this.tetris.rotatecw();
+            if(this.tetris.getbottom()) {
+                this.cur = this.t;
+                this.buffer++;
+            }
         });
         this.key_triggered_button("hold", ["q"], () => {
             this.tetris.hold_piece();
@@ -360,7 +378,7 @@ export class Main extends Base_Scene {
 
 
     display(context, program_state) {
-        let t = Math.floor(program_state.animation_time/1000), dt = program_state.animation_delta_time / 1000;;
+        let t = Math.floor(program_state.animation_time), dt = program_state.animation_delta_time / 1000;
         let light_position = vec4(0, 10, -25, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 0)];
         if (self.dayTimeLeft >= 0){
@@ -391,10 +409,11 @@ export class Main extends Base_Scene {
 
 
         super.display(context, program_state);
-
-        if (t - this.cur > 0.5) {
+        this.t = t;
+        if (t - this.cur > 1000 || this.buffer > 15) {
             this.tetris.tick();
             this.cur = t;
+            this.buffer = 0;
         }
         this.drawPiece(context, program_state, this.tetris, -1);
         

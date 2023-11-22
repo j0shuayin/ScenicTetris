@@ -111,7 +111,9 @@ class Base_Scene extends Scene {
             green_texture: new Material(new defs.Phong_Shader(), 
                 {specularity: 0.3, diffsusivity:0.3, color:hex_color("#276221")}),
             mountain: new Material(new defs.Phong_Shader(), 
-                {specularity:.5, diffusivity:0.6, color:hex_color("#808080")}),
+                {specularity:.2, diffusivity:0.6, color:hex_color("#808080")}),
+            snow: new Material(new defs.Phong_Shader(), 
+                {specularity:.2, diffusivity:0.6, color:hex_color("#ffffff")}),
             sun: new Material(new defs.Phong_Shader(), 
                 {ambient:1, color:hex_color("#DFFF00")}),
             plastic: new Material(new defs.Phong_Shader(),
@@ -167,7 +169,15 @@ export class Main extends Base_Scene {
 
         this.treeMatrices = [];
         for(var i = 0; i < 30; i++){
-            this.treeMatrices.push(Mat4.translation(Math.random() * 100 - 13 - 50, -3, Math.random() * 50 + 10));
+            while (true){
+                var t1 = Math.random() * 120 - 13 - 50 - 20;
+                var t2 = Math.random() * 70 - 20;
+                if (t2 <= 10 && t1 >= -25 && t1 <= 2){
+                    continue;
+                }
+                this.treeMatrices.push(Mat4.translation(t1, -3, t2));
+                break;
+            }
         }
 
         this.bushMatrices = [];
@@ -375,6 +385,13 @@ export class Main extends Base_Scene {
         let mountain_postScale = Mat4.scale(40, 28, 40).times(mountain_rotation);
         let mountain_final = matrix.times(mountain_postScale);
         this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(mountain_final), this.materials.mountain);
+
+        let top_postScale = Mat4.translation(0, 38-4, 0).times(Mat4.scale(8, 5.6, 8).times(mountain_rotation));
+        let top_final = matrix.times(top_postScale);
+    
+        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(top_final), this.materials.snow);
+
+
     }
 
     drawGround(context, program_state, mat4){

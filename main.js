@@ -123,7 +123,7 @@ class Base_Scene extends Scene {
         // *** Materials
         // The white material and basic shader are used for drawing the outline.
         this.white = new Material(new defs.Basic_Shader());
-        this.initial_camera_location = Mat4.look_at(vec3(-.6, 1.7, -6.5), vec3(-.6, 1.7, 0), vec3(0, 1.8, 0));
+        this.initial_camera_location = Mat4.look_at(vec3(-1.3, 1.7, -6.5), vec3(-1.3, 1.7, 0), vec3(0, 1.8, 0));
 
     }
 
@@ -164,6 +164,17 @@ export class Main extends Base_Scene {
         self.nightTimeLeft = -1;
         self.daysLasted = 1;
         self.nightScaling = (daysLasted + 4) ** (1.5);
+
+        this.treeMatrices = [];
+        for(var i = 0; i < 30; i++){
+            this.treeMatrices.push(Mat4.translation(Math.random() * 100 - 13 - 50, -3, Math.random() * 50 + 10));
+        }
+
+        this.bushMatrices = [];
+        for(var i = 0; i < 30; i++){
+            this.bushMatrices.push(Mat4.translation(Math.random() * 100 - 13 - 50, -3, Math.random() * 50 + 10));
+        }
+
 
         this.colors = []
         this.set_colors();
@@ -356,8 +367,8 @@ export class Main extends Base_Scene {
         this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(mountain_final), this.materials.mountain);
     }
 
-    drawGround(context, program_state){
-        let ground = Mat4.translation(0, 0, 0).times(Mat4.scale(1000, 0.1, 1000));
+    drawGround(context, program_state, mat4){
+        let ground = mat4.times(Mat4.scale(1000, 0.1, 1000));
         this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(ground), this.materials.green_texture);
     }
     
@@ -396,15 +407,15 @@ export class Main extends Base_Scene {
             self.nightScaling++;
         }
 
-        this.drawTree(context, program_state, Mat4.translation(15, 0, -10));
+        for(var i = 0; i < 30; i++){
+            this.drawTree(context, program_state, this.treeMatrices[i]);
+        }
 
-        this.drawBush(context, program_state, Mat4.translation(-5, 0, 10));
-
-        
-
-        this.drawMountain(context, program_state, Mat4.translation(20, 0, 150));
-        this.drawGround(context, program_state);
-
+        for(var i = 0; i < 30; i++){
+            this.drawBush(context, program_state, this.bushMatrices[i]);
+        }
+        this.drawMountain(context, program_state, Mat4.translation(20, -3, 150));
+        this.drawGround(context, program_state, Mat4.translation(0, -3, 0));
         this.drawRaindrops(context, program_state, dt);
 
 

@@ -174,6 +174,11 @@ export class Main extends Base_Scene {
         for(var i = 0; i < 30; i++){
             this.bushMatrices.push(Mat4.translation(Math.random() * 100 - 13 - 50, -3, Math.random() * 50 + 10));
         }
+        
+        this.mountainMatrices = [];
+        for(var i = 0; i < 3; i++){
+            this.mountainMatrices.push(Mat4.translation(Math.random() * 200 - 13 - 100, -3, Math.random() * 20 + 140));
+        }
 
 
         this.colors = []
@@ -414,7 +419,11 @@ export class Main extends Base_Scene {
         for(var i = 0; i < 30; i++){
             this.drawBush(context, program_state, this.bushMatrices[i]);
         }
-        this.drawMountain(context, program_state, Mat4.translation(20, -3, 150));
+
+        for(var i = 0; i < 3; i++){
+            this.drawMountain(context, program_state, this.mountainMatrices[i]);
+        }
+
         this.drawGround(context, program_state, Mat4.translation(0, -3, 0));
         this.drawRaindrops(context, program_state, dt);
 

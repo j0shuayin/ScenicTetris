@@ -190,6 +190,7 @@ export class Main extends Base_Scene {
         this.cur = 0;
         this.t = 0;
         this.buffer = 0;
+        this.atbottom = false;
         this.tetris = new tetris();
     }
     set_colors() {
@@ -222,7 +223,11 @@ export class Main extends Base_Scene {
         //     this.pos = Mat4.translation(0,-2,0).times(this.pos);
         // });
         this.key_triggered_button("move down", ["ArrowDown"], () => {
+            let b = !this.tetris.getbottom();
             this.tetris.movedown();
+            if (b && this.tetris.getbottom()) {
+                this.cur = this.t;
+            }
         });
         this.key_triggered_button("rotate CCW", ["w"], () => {
             this.tetris.rotateccw();
@@ -430,7 +435,7 @@ export class Main extends Base_Scene {
 
         super.display(context, program_state);
         this.t = t;
-        if (t - this.cur > 1000 || this.buffer > 15) {
+        if (t - this.cur > 1000 || (this.buffer > 15 && this.atbottom)) {
             this.tetris.tick();
             this.cur = t;
             this.buffer = 0;

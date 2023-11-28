@@ -2,33 +2,9 @@ import {defs, tiny} from './examples/common.js';
 import {tetris} from './tetris.js';
 
 const {
-    Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene,
+    Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Shape_From_File, Material, Scene, Texture, Textured_Phong, Fake_Bump_Map,
 } = tiny;
 
-
-class Raindrop{
-    constructor(px, py, pz, velocity){
-        self.px = px;
-        self.py = py;
-        self.pz = pz;
-        self.velocity = velocity;
-
-    }
-    tick(dt){
-        let elapsed = dt;
-        self.velocity += (elapsed) / 2.0 * 10;
-        self.py = self.py - velocity * elapsed;
-        self.velocity += (elapsed) / 2.0 * 10;
-    }
-    delete(){
-        return self.py < 0;
-    }
-
-    getMat4(){
-        return Mat4.translation(self.px, self.py, self.pz);
-    }
-
-}
 
 
 class Cube extends Shape {
@@ -103,7 +79,10 @@ class Base_Scene extends Scene {
             sphere: new defs.Subdivision_Sphere(4),
             circle: new defs.Regular_2D_Polygon(1, 15),
             cylinder: new defs.Capped_Cylinder(100, 100),
-            cone: new defs.Closed_Cone(100, 100),
+            cone: new defs.Closed_Cone(3, 3),
+            big_cone: new defs.Closed_Cone(20, 20),
+
+            //mountain_obj: new Shape_From_File("assets/mountainpeak.obj")
         };
         this.materials = {
             brown_texture: new Material(new defs.Phong_Shader(),
@@ -116,8 +95,14 @@ class Base_Scene extends Scene {
                 {specularity:.2, diffusivity:0.6, color:hex_color("#ffffff")}),
             sun: new Material(new defs.Phong_Shader(), 
                 {ambient:1, color:hex_color("#DFFF00")}),
+            moon: new Material(new defs.Phong_Shader(), 
+                {ambient:1, color:hex_color("#FFFFFF")}),
+            moon_dark: new Material(new defs.Phong_Shader(), 
+                {ambient:1, color:hex_color("#000000")}),
             plastic: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+            grass: new Material(new defs.Fake_Bump_Map(),
+                {color: hex_color("#000000"), ambient:1, texture: new Texture("assets/mongus.png", "NEAREST")})
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
         }
@@ -160,7 +145,6 @@ export class Main extends Base_Scene {
 
         this.downscale_mat4 = Mat4.scale(0.1, 0.1, 0.1);
 
-        self.raindrops = []
         self.totalDayTime = 20;
         self.dayTimeLeft = 20;
         self.nightTimeLeft = -1;
@@ -343,8 +327,8 @@ export class Main extends Base_Scene {
 
     drawTree(context, program_state, matrix){
         let cylinder_rotation = Mat4.rotation(Math.PI / 2, 1, 0, 0);
-        let cylinder_postScale = Mat4.scale(.7, 5, .7).times(cylinder_rotation);
-        let cylinder_postShift = Mat4.translation(0, 2.5, 0).times(cylinder_postScale);
+        let cylinder_postScale = Mat4.scale(.7, 4, .7).times(cylinder_rotation);
+        let cylinder_postShift = Mat4.translation(0, 2, 0).times(cylinder_postScale);
         let cylinder_final = this.downscale_mat4.times(matrix.times(cylinder_postShift));
         this.shapes.cylinder.draw(context, program_state, cylinder_final, this.materials.brown_texture);
 
@@ -356,9 +340,9 @@ export class Main extends Base_Scene {
         let c3 = matrix.times(Mat4.translation(0, 2.5+2.4, 0).times(Mat4.scale(1, 1, 1).times(cone_final)));
 
 
-        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(c1), this.materials.green_texture)
-        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(c2), this.materials.green_texture)
-        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(c3), this.materials.green_texture)
+        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(c1), this.materials.grass)
+        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(c2), this.materials.grass)
+        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(c3), this.materials.grass)
     }
 
     drawBush(context, program_state, matrix){
@@ -384,13 +368,27 @@ export class Main extends Base_Scene {
         let mountain_rotation = Mat4.translation(0, 0.5, 0).times(Mat4.rotation(-Math.PI / 2, 1, 0, 0));
         let mountain_postScale = Mat4.scale(40, 28, 40).times(mountain_rotation);
         let mountain_final = matrix.times(mountain_postScale);
-        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(mountain_final), this.materials.mountain);
+        this.shapes.big_cone.draw(context, program_state, this.downscale_mat4.times(mountain_final), this.materials.mountain);
 
         let top_postScale = Mat4.translation(0, 38-4, 0).times(Mat4.scale(8, 5.6, 8).times(mountain_rotation));
         let top_final = matrix.times(top_postScale);
     
-        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(top_final), this.materials.snow);
+        this.shapes.big_cone.draw(context, program_state, this.downscale_mat4.times(top_final), this.materials.snow);
 
+    }
+
+    drawObjMountain(context, program_state, matrix){
+        let mountain_rotation = Mat4.translation(0, 0.5, 0).times(Mat4.rotation(-Math.PI / 2, 1, 0, 0));
+        let mountain_postScale = Mat4.scale(40, 28, 40).times(mountain_rotation);
+        mountain_postScale = Mat4.scale(40, 28, 40);
+        let mountain_final = matrix.times(mountain_postScale);
+        this.shapes.mountain_obj.draw(context, program_state, this.downscale_mat4.times(mountain_final), this.materials.mountain);
+
+        /*let top_postScale = Mat4.translation(0, 38-4, 0).times(Mat4.scale(8, 5.6, 8).times(mountain_rotation));
+        let top_final = matrix.times(top_postScale);
+    
+        this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(top_final), this.materials.snow);
+*/
 
     }
 
@@ -399,7 +397,7 @@ export class Main extends Base_Scene {
         this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(ground), this.materials.green_texture);
     }
     
-    drawRaindrops(context, program_state, dt){
+    /*drawRaindrops(context, program_state, dt){
         for(var i = 0; i < self.raindrops.length; i++){
             self.raindrops[i].tick(dt);
             if (self.raindrops[i].delete()){
@@ -410,24 +408,45 @@ export class Main extends Base_Scene {
                 this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(self.raindrops[i].getMat4()), this.materials.sun);
             }
         }
-    }
+    }*/
 
    
 
 
     display(context, program_state) {
         let t = Math.floor(program_state.animation_time), dt = program_state.animation_delta_time / 1000;
-        let light_position = vec4(0, 10, -25, 1);
+        let light_position = vec4(-7.5, 100, -250, 10);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 0)];
         if (self.dayTimeLeft >= 0){
             self.nightTimeLeft = nightScaling;
-            let sun_scale = Mat4.scale(3, 3, 3);
+            let sun_scale = Mat4.scale(6, 6, 6);
             let sun_translation = Mat4.translation(0, 0,210).times(sun_scale);
             let sun_rotation = Mat4.rotation(-Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime), 1, 0, 0).times(sun_translation);
             this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(sun_rotation), this.materials.sun);
+            
+            var arr = [];
+            for(var i = 0; i < 6; i++){
+                var angle = 2 * Math.PI  / 6 * i;
+                arr.push(sun_rotation.times(Mat4.scale(.5, .5, .5).times(Mat4.rotation(angle, 0, 0, 1).times(Mat4.translation(0, 3.4, 0).times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))))));
+                this.shapes.big_cone.draw(context, program_state, this.downscale_mat4.times(arr[i]), this.materials.sun);
+
+            }
+            //let c1 = sun_rotation.times(Mat4.scale(.5, .5, .5).times(Mat4.translation(0, 3.4, 0).times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))));
+            //this.shapes.big_cone.draw(context, program_state,this.downscale_mat4.times(c1), this.materials.sun);
+
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 10**(12*Math.sin((self.dayTimeLeft) / self.totalDayTime * Math.PI)))];
+            //console.log(Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)));
+            this.materials.grass = this.materials.grass.override({color: hex_color("#000000"), ambient: Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)) * 0.7, diffuse:0.5})
+
+            console.log()
             self.dayTimeLeft -= dt;
         }else if (nightTimeLeft >= 0){
+            let moon_scale = Mat4.scale(6, 6, 6);
+            let moon_translataion = Mat4.translation(0, 0,210).times(moon_scale);
+            let moon_rotation = Mat4.rotation(-Math.PI * (1 - (self.nightTimeLeft) / self.nightScaling), 1, 0, 0).times(moon_translataion);
+            this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(moon_rotation), this.materials.moon);
+            this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(Mat4.translation(4, 0, -3).times(moon_rotation)), this.materials.moon_dark);
+
             self.nightTimeLeft -= dt;
         }else{
             self.dayTimeLeft = self.totalDayTime;
@@ -447,8 +466,6 @@ export class Main extends Base_Scene {
         }
 
         this.drawGround(context, program_state, Mat4.translation(0, -3, 0));
-        this.drawRaindrops(context, program_state, dt);
-
 
         super.display(context, program_state);
         this.t = t;

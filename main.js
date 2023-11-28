@@ -102,7 +102,10 @@ class Base_Scene extends Scene {
             plastic: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
             grass: new Material(new defs.Fake_Bump_Map(),
-                {color: hex_color("#000000"), ambient:1, texture: new Texture("assets/mongus.png", "NEAREST")})
+                {color: hex_color("#000000"), ambient:1, texture: new Texture("assets/mongus.png", "NEAREST")}),
+
+            sky: new Material(new defs.Phong_Shader(),
+                {ambient: 1, color: hex_color("#87CEEB")})
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
         }
@@ -396,6 +399,11 @@ export class Main extends Base_Scene {
         let ground = mat4.times(Mat4.scale(1000, 0.1, 1000));
         this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(ground), this.materials.green_texture);
     }
+
+    drawSky(context, program_state, mat4){
+        let ground = mat4.times(Mat4.scale(1000, 1000, 0.1));
+        this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(ground), this.materials.sky);
+    }
     
     /*drawRaindrops(context, program_state, dt){
         for(var i = 0; i < self.raindrops.length; i++){
@@ -436,7 +444,8 @@ export class Main extends Base_Scene {
 
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 10**(12*Math.sin((self.dayTimeLeft) / self.totalDayTime * Math.PI)))];
             //console.log(Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)));
-            this.materials.grass = this.materials.grass.override({color: hex_color("#000000"), ambient: Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)) * 0.7, diffuse:0.5})
+            this.materials.grass = this.materials.grass.override({color: hex_color("#000000"), ambient: Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)) * 0.7, diffusivity:0.3, specularity: 0})
+            this.materials.sky =  this.materials.sky.override({color: hex_color("#87CEEB"), ambient: Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)), diffusivity: 0, specularity: 0});
 
             console.log()
             self.dayTimeLeft -= dt;
@@ -466,6 +475,9 @@ export class Main extends Base_Scene {
         }
 
         this.drawGround(context, program_state, Mat4.translation(0, -3, 0));
+
+        this.drawSky(context, program_state, Mat4.translation(0, 0, 250));
+
 
         super.display(context, program_state);
         this.t = t;

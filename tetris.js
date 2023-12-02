@@ -21,6 +21,7 @@ export class tetris{
         this.ghosty = 19;
         this.block = Math.floor(Math.random() * 7);
         this.rotation = 0;
+        this.gameend = false;
 
         this.hold = -1;
         this.held = false;
@@ -125,18 +126,28 @@ export class tetris{
         this.rotation = 0;
         this.held = false;
     }
+    checkend() {
+        if(!this.checkcollision(this.x, this.y, this.rotation)) {
+            this.gameend = true;
+        }
+    }
     tick() {
-        if(this.checkcollision(this.x, this.y-1, this.rotation)) {
-            this.y--;
-            return false;
-        } else {
-            this.placeblock();
-            this.clearlines();
-            return true;
+        if(!this.gameend) {
+            if(this.checkcollision(this.x, this.y-1, this.rotation)) {
+                this.y--;
+                return false;
+            } else {
+                this.placeblock();
+                this.clearlines();
+                this.checkend();
+                return true;
+            }
         }
     }
     harddrop() {
-        while(!this.tick()) {}
+        if(!this.gameend) {
+            while(!this.tick()) {}
+        }
     }
     getGhosty() {
         for(let i = this.y; i >= 0; i--) {
@@ -147,71 +158,81 @@ export class tetris{
         return -1;
     }
     moveleft() {
-        if(this.checkcollision(this.x-1, this.y, this.rotation)) {
-            this.x--;
-        }
+        if(!this.gameend)
+            if(this.checkcollision(this.x-1, this.y, this.rotation)) {
+                this.x--;
+            }
     }
     moveright() {
-        if(this.checkcollision(this.x+1, this.y, this.rotation))
-            this.x++;
+        if(!this.gameend)
+            if(this.checkcollision(this.x+1, this.y, this.rotation))
+                this.x++;
     }
     hold_piece() {
-        if (this.held === true) return;
-        if (this.hold === -1) {
-            this.hold = this.block;
-            this.block = this.getblock();
+        if(!this.gameend) {
+            if (this.held === true) return;
+            if (this.hold === -1) {
+                this.hold = this.block;
+                this.block = this.getblock();
+            }
+            else {
+                let temp = this.block;
+                this.block = this.hold;
+                this.hold = temp;
+            }
+            this.x = 6;
+            this.y = 19;
+            this.held = true;
+            this.checkend();
         }
-        else {
-            let temp = this.block;
-            this.block = this.hold;
-            this.hold = temp;
-        }
-        this.x = 6;
-        this.y = 19;
-        this.held = true;
     }
     movedown() {
-        if(this.checkcollision(this.x, this.y-1, this.rotation))
-            this.y--;
+        if(!this.gameend)
+            if(this.checkcollision(this.x, this.y-1, this.rotation))
+                this.y--;
     }
     rotatecw() {
-        let newRotation = (this.rotation+1)%4;
-        if(this.checkcollision(this.x, this.y, newRotation)) {
-            this.rotation = newRotation;
-        }
-        else {
-            if (this.block === 1) return;
+        if(!this.gameend) {
+            let newRotation = (this.rotation+1)%4;
+            if(this.checkcollision(this.x, this.y, newRotation)) {
+                this.rotation = newRotation;
+            }
+            else {
+                if (this.block === 1) return;
 
-            let kicks = (this.block === 0) ? this.i_kick[this.rotation*2] : this.kick[this.rotation*2]
-            for (let i = 0; i < 4; i++) {
-                let nx = this.x + kicks[i][0];
-                let ny = this.y + kicks[i][1];
-                if (this.checkcollision(nx, ny, newRotation)) {
-                    this.x = nx;
-                    this.y = ny;
-                    this.rotation = newRotation;
-                    return;
+                let kicks = (this.block === 0) ? this.i_kick[this.rotation*2] : this.kick[this.rotation*2]
+                for (let i = 0; i < 4; i++) {
+                    let nx = this.x + kicks[i][0];
+                    let ny = this.y + kicks[i][1];
+                    if (this.checkcollision(nx, ny, newRotation)) {
+                        this.x = nx;
+                        this.y = ny;
+                        this.rotation = newRotation;
+                        return;
+                    }
                 }
             }
         }
     }
     rotateccw() {
-        let newRotation = (this.rotation+3)%4;
-        if(this.checkcollision(this.x, this.y, newRotation)) {
-            this.rotation = newRotation;
-        }
-        else {
-            if (this.block === 1) return;
+        if(!this.gameend) {
+            let newRotation = (this.rotation+3)%4;
+            if(this.checkcollision(this.x, this.y, newRotation)) {
+                this.rotation = newRotation;
+            }
+            else {
+                if (this.block === 1) return;
 
-            let kicks = (this.block === 0) ? this.i_kick[(this.rotation*2+7)%8] : this.kick[(this.rotation*2+7)%8]
-            for (let i = 0; i < 4; i++) {
-                let nx = this.x + kicks[i][0];
-                let ny = this.y + kicks[i][1];
-                if (this.checkcollision(nx, ny, newRotation)) {
-                    this.x = nx;
-                    this.y = ny;
-                    this.rotation = newRotation;
-                    return;
+                let kicks = (this.block === 0) ? this.i_kick[(this.rotation*2+7)%8] : this.kick[(this.rotation*2+7)%8]
+                for (let i = 0; i < 4; i++) {
+                    let nx = this.x + kicks[i][0];
+                    let ny = this.y + kicks[i][1];
+                    if (this.checkcollision(nx, ny, newRotation)) {
+                        this.x = nx;
+                        this.y = ny;
+                        this.rotation = newRotation;
+                        return;
+                    }
                 }
             }
         }

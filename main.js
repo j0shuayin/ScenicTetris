@@ -190,6 +190,15 @@ export class Main extends Base_Scene {
         this.t = 0;
         this.buffer = 0;
         this.atbottom = false;
+        this.endstep = 0;
+        this.endtime = 0;
+        this.gg = [
+            [0, 0], [0, 1], [0, 2], [0, 3],
+            [1, 0], 
+            [2, 0],         [2, 2], [2, 3],
+            [3, 0],                 [3, 3],
+            [4, 0], [4, 1], [4, 2], [4, 3],
+        ];
         this.tetris = new tetris();
     }
     set_colors() {
@@ -270,11 +279,26 @@ export class Main extends Base_Scene {
     }
 
     drawBoard(context, program_state, grid) {
-        for (let i = 0; i < 14; i++) {
-            for (let j = 0; j < 22; j++) {
-                if (grid[i][j] !== -1 ) {
-                    this.draw_box(context, program_state, -i*2, j*2, this.tetris.colors[grid[i][j]]);
+        if(this.endstep < 53) {
+            for (let i = 0; i < 14; i++) {
+                for (let j = 0; j < 22; j++) {
+                    if (grid[i][j] !== -1 ) {
+                        if(this.endstep/2 > j)  {
+                            if(this.endstep == 2*j+1) {
+                                this.draw_box(context, program_state, -i*2, j*2, this.tetris.colors[7]);
+                            } else {
+                                this.draw_box(context, program_state, -i*2, j*2-0.5*(this.endstep-2*j)*(this.endstep-2*j), this.tetris.colors[7]);
+                            }
+                        } else {
+                            this.draw_box(context, program_state, -i*2, j*2, this.tetris.colors[grid[i][j]]);
+                        }
+                    }
                 }
+            }
+        } else {
+            for(let i = 0; i < 14; i++) {
+                this.draw_box(context, program_state, (-2-this.gg[i][1])*2, (17-this.gg[i][0])*2, this.tetris.colors[3]);
+                this.draw_box(context, program_state, (-8-this.gg[i][1])*2, (17-this.gg[i][0])*2, this.tetris.colors[4]);
             }
         }
     }
@@ -487,7 +511,16 @@ export class Main extends Base_Scene {
             this.buffer = 0;
         }
         this.drawPiece(context, program_state, this.tetris, -1);
-        
+        if(this.tetris.gameend) {
+            if(this.endstep == 0) {
+                this.endtime = t;
+                this.endstep = 1;
+            }
+            if(t-this.endtime > 50 && this.endstep < 60) {
+                this.endstep++;
+                this.endtime = t;
+            }
+        }
 
         // this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(this.pos), this.materials.plastic.override({color: hex_color("#DD0AB2")}));
         // this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(this.pos.times(this.rot).times(Mat4.translation(-2,0,0))), this.materials.plastic.override({color: hex_color("#DD0AB2")}));

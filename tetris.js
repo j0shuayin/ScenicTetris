@@ -22,6 +22,10 @@ export class tetris{
         this.block = Math.floor(Math.random() * 7);
         this.rotation = 0;
         this.gameend = false;
+        this.animate = [];
+        for(let i = 0; i < 24; i++) {
+            this.animate[i] = false;
+        }
 
         this.hold = -1;
         this.held = false;
@@ -48,7 +52,7 @@ export class tetris{
             [[[-1,0],[0,1],[0,0],[1,1]],[[0,1],[0,0],[1,0],[1,-1]],[[-1,-1],[0,-1],[0,0],[1,0]],[[-1,1],[-1,0],[0,0],[0,-1]]],
             [[[-1,1],[0,1],[0,0],[1,0]],[[1,1],[1,0],[0,0],[0,-1]],[[-1,0],[0,0],[0,-1],[1,-1]],[[-1,-1],[-1,0],[0,0],[0,1]]]
         ];
-        this.colors = ["01EDFA", "FEFB34", "DD0AB2", "FF6F00", "2B35AF", "66FF01", "EE4B2B"]
+        this.colors = ["01EDFA", "FEFB34", "DD0AB2", "FF6F00", "2B35AF", "66FF01", "EE4B2B", "FFFFFF"]
         this.i_kick = [[[-2,0],[1,0],[-2,-1],[1,2]],
                        [[2,0],[-1,0],[2,1],[-1,-2]],
                        [[-1,0],[2,0],[-1,2],[2,-1]],
@@ -102,6 +106,16 @@ export class tetris{
             }
         }
     }
+    checklines() {
+        for(let y = 0; y < 24; y++) {
+            var fullLine = true;
+            for(let x = 2; x < 12; x++) {
+                if(this.grid[x][y] == -1) 
+                    fullLine = false;
+            }
+            this.animate[y] = fullLine;
+        }
+    }
     getblock() {
         if (this.queue.length < 6) {
             this.bag = [0, 1, 2, 3, 4, 5, 6]
@@ -138,6 +152,7 @@ export class tetris{
                 return false;
             } else {
                 this.placeblock();
+                this.checklines();
                 this.clearlines();
                 this.checkend();
                 return true;

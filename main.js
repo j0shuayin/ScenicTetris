@@ -83,7 +83,8 @@ class Base_Scene extends Scene {
             big_cone: new defs.Closed_Cone(20, 20),
 
             //mountain_obj: new Shape_From_File("assets/mountainpeak.obj")
-            mountain_obj: new Shape_From_File("assets/part.obj")
+            mountain_obj: new Shape_From_File("assets/part.obj"),
+            star_obj: new Shape_From_File("assets/star.obj")
 
         };
         this.materials = {
@@ -104,10 +105,14 @@ class Base_Scene extends Scene {
             plastic: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
             grass: new Material(new defs.Fake_Bump_Map(),
-                {color: hex_color("#000000"), ambient:1, texture: new Texture("assets/mongus.png", "NEAREST")}),
+                {color: hex_color("#000000"), ambient:1, diffusivity: 1, specularity:1, texture: new Texture("assets/mongus.png", "NEAREST")}),
+            star: new Material(new defs.Phong_Shader(),
+                {color: hex_color("#FFFFFF"), ambient: 0}),
 
             sky: new Material(new defs.Phong_Shader(),
-                {ambient: 1, color: hex_color("#87CEEB")})
+                {ambient: 1, color: hex_color("#87CEEB")}),
+            cloud: new Material(new defs.Phong_Shader(),
+                {ambient: 0, diffusivity: 1, specularity: 0.5, color: hex_color("#FFFFFF")})
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
         }
@@ -172,6 +177,19 @@ export class Main extends Base_Scene {
         this.bushMatrices = [];
         for(var i = 0; i < 30; i++){
             this.bushMatrices.push(Mat4.translation(Math.random() * 100 - 13 - 50, -3, Math.random() * 50 + 10));
+        }
+
+        this.stars = [];
+        this.starRotations = [];
+        this.starSideRotations = [];
+        for(var i = 0; i < 750; i++){
+            this.stars.push(Mat4.translation(Math.random() * 800 - 13 - 400, 0, 300));
+            this.starRotations.push(Math.random() * Math.PI * 2 - Math.PI);
+            this.starSideRotations.push(Mat4.rotation(Math.random() * 2 * Math.PI, 0, 0, 1));
+        }
+        this.clouds = [];
+        for(var i = 0; i < 5; i++){
+            this.clouds.push(Mat4.translation(Math.random() * 300 - 150, 40, 60).times(Mat4.scale(10, 5, 5)));
         }
         
         this.mountainMatrices = [];
@@ -350,7 +368,7 @@ export class Main extends Base_Scene {
         this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(c3), this.materials.grass)
     }
 
-    drawBush(context, program_state, matrix){
+    drawBush(context, program_state, matrix, tex){
         var shrub = [
             Mat4.translation(-.2, 0, 0),
             Mat4.translation(.5, 0, 0),
@@ -365,7 +383,7 @@ export class Main extends Base_Scene {
         ]
 
         for(var i = 0; i < 10; i++){
-            this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(Mat4.translation(0, 0.3, 0).times(matrix.times(shrub[i]))), this.materials.green_texture);
+            this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(Mat4.translation(0, 0.3, 0).times(matrix.times(shrub[i]))), tex);
         }
     }
 
@@ -392,7 +410,6 @@ export class Main extends Base_Scene {
     
         this.shapes.cone.draw(context, program_state, this.downscale_mat4.times(top_final), this.materials.snow);
 */
-
     }
 
     drawGround(context, program_state, mat4){
@@ -403,6 +420,18 @@ export class Main extends Base_Scene {
     drawSky(context, program_state, mat4){
         let ground = mat4.times(Mat4.scale(1000, 1000, 0.1));
         this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(ground), this.materials.sky);
+    }
+
+    drawStars(context, program_state){
+        for(var i = 0; i < 750; i++){
+            this.shapes.star_obj.draw(context, program_state, this.downscale_mat4.times(Mat4.rotation(this.starRotations[i], 1, 0, 0).times(this.stars[i].times(this.starSideRotations[i].times(Mat4.rotation(-this.starRotations[i] + Math.PI / 2, 1, 0, 0))))), this.materials.star);
+        }
+    }
+
+    drawClouds(context, program_state){
+        for(var i = 0; i < 5; i++){
+            this.drawBush(context, program_state, this.clouds[i], this.materials.cloud);
+        }
     }
     
     /*drawRaindrops(context, program_state, dt){
@@ -423,7 +452,7 @@ export class Main extends Base_Scene {
 
     display(context, program_state) {
         let t = Math.floor(program_state.animation_time), dt = program_state.animation_delta_time / 1000;
-        let light_position = vec4(-7.5, 100, -250, 10);
+        let light_position = vec4(-40, 100, -250, 10);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 0)];
         if (self.dayTimeLeft >= 0){
             self.nightTimeLeft = nightScaling;
@@ -444,17 +473,18 @@ export class Main extends Base_Scene {
 
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 10**(12*Math.sin((self.dayTimeLeft) / self.totalDayTime * Math.PI)))];
             //console.log(Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)));
-            this.materials.grass = this.materials.grass.override({color: hex_color("#000000"), ambient: Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)) * 0.7, diffusivity:0.3, specularity: 0})
+            this.materials.grass = this.materials.grass.override({color: hex_color("#000000"), ambient: Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)) * 0.4, diffusivity:1, specularity: .5})
             this.materials.sky =  this.materials.sky.override({color: hex_color("#87CEEB"), ambient: Math.sin(Math.PI * (1 - (self.dayTimeLeft) / self.totalDayTime)), diffusivity: 0, specularity: 0});
 
-            console.log()
             self.dayTimeLeft -= dt;
         }else if (nightTimeLeft >= 0){
+            this.materials.sky =  this.materials.sky.override({color: hex_color("#87CEEB"), ambient: 0, diffusivity: 0, specularity: 0});
             let moon_scale = Mat4.scale(6, 6, 6);
             let moon_translataion = Mat4.translation(0, 0,210).times(moon_scale);
             let moon_rotation = Mat4.rotation(-Math.PI * (1 - (self.nightTimeLeft) / self.nightScaling), 1, 0, 0).times(moon_translataion);
             this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(moon_rotation), this.materials.moon);
             this.shapes.sphere.draw(context, program_state, this.downscale_mat4.times(Mat4.translation(4, 0, -3).times(moon_rotation)), this.materials.moon_dark);
+            this.materials.star = this.materials.star.override({color: hex_color("#FFFFFF"), ambient: Math.sin(Math.PI * (1 - (self.nightTimeLeft) / self.nightScaling)) * 0.7, diffusivity:0.3, specularity: 0})
 
             self.nightTimeLeft -= dt;
         }else{
@@ -467,16 +497,37 @@ export class Main extends Base_Scene {
         }
 
         for(var i = 0; i < 30; i++){
-            this.drawBush(context, program_state, this.bushMatrices[i]);
+            this.drawBush(context, program_state, this.bushMatrices[i], this.materials.green_texture);
         }
 
         for(var i = 0; i < 3; i++){
             this.drawObjMountain(context, program_state, this.mountainMatrices[i]);
         }
 
+        
+
         this.drawGround(context, program_state, Mat4.translation(0, -3, 0));
 
-        this.drawSky(context, program_state, Mat4.translation(0, 0, 250));
+        if (this.materials.sky.ambient != 0){
+            this.drawSky(context, program_state, Mat4.translation(0, 0, 250));
+        }
+
+        for(var i = 0; i < 750; i++){
+            this.starRotations[i] += 0.01 * dt;
+        }
+
+        this.drawStars(context, program_state);
+
+        for(var i = 0; i < 5; i++){
+            this.clouds[i] = Mat4.translation(dt * 2, 0, 0).times(this.clouds[i]);
+            if (this.clouds[i][0][3] / this.clouds[i][3][3] >= 105){
+                this.clouds[i] = Mat4.translation(-240, 0, 0).times(this.clouds[i]);
+            }else{
+                console.log(this.clouds[i][0][3] / this.clouds[i][3][3]);
+            }
+        }
+
+        this.drawClouds(context, program_state);
 
 
         super.display(context, program_state);

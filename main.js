@@ -424,7 +424,11 @@ export class Main extends Base_Scene {
 
     drawStars(context, program_state){
         for(var i = 0; i < 750; i++){
-            this.shapes.star_obj.draw(context, program_state, this.downscale_mat4.times(Mat4.rotation(this.starRotations[i], 1, 0, 0).times(this.stars[i].times(this.starSideRotations[i].times(Mat4.rotation(-this.starRotations[i] + Math.PI / 2, 1, 0, 0))))), this.materials.star);
+            var finalMat = Mat4.rotation(this.starRotations[i], 1, 0, 0).times(this.stars[i].times(this.starSideRotations[i].times(Mat4.rotation(-this.starRotations[i] + Math.PI / 2, 1, 0, 0))));
+            var yCoord = finalMat[1][3] / finalMat[3][3];
+            var zCoord = finalMat[2][3] / finalMat[3][3];
+            if (yCoord >= -10 && zCoord >= -20)this.shapes.star_obj.draw(context, program_state, this.downscale_mat4.times(finalMat), this.materials.star);
+            
         }
     }
 

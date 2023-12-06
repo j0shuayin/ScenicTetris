@@ -480,7 +480,7 @@ export class Main extends Base_Scene {
 
     display(context, program_state) {
         let t = Math.floor(program_state.animation_time), dt = program_state.animation_delta_time / 1000;
-        let light_position = vec4(-40, 100, -250, 10);
+        let light_position = vec4(-200, 100, -250, 10);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 0)];
         if (self.dayTimeLeft >= 0){
             self.nightTimeLeft = nightScaling;

@@ -210,6 +210,7 @@ export class Main extends Base_Scene {
         this.atbottom = false;
         this.endstep = 0;
         this.endtime = 0;
+        this.lineClearStart = 0;
         this.gg = [
             [0, 0], [0, 1], [0, 2], [0, 3],
             [1, 0], 
@@ -276,12 +277,14 @@ export class Main extends Base_Scene {
             this.tetris.harddrop();
         });
         this.key_triggered_button("restart", ["r"], () => {
+            this.endstep = 0;
             this.tetris = new tetris();
         });
     }
 
-    draw_box(context, program_state, x, y, clr) {
-        this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(Mat4.translation(x, y, 0).times(Mat4.identity())), this.materials.plastic.override({color: hex_color(clr)}));
+    draw_box(context, program_state, x, y, clr, scale = -1) {
+        let sm = (scale === -1) ? Mat4.identity() : Mat4.scale(scale, scale, scale);
+        this.shapes.cube.draw(context, program_state, this.downscale_mat4.times(Mat4.translation(x, y, 0).times(sm)), this.materials.plastic.override({color: hex_color(clr)}));
     }
 
     drawGrid(context, program_state) {
@@ -308,9 +311,12 @@ export class Main extends Base_Scene {
                                 this.draw_box(context, program_state, -i*2, j*2-0.5*(this.endstep-2*j)*(this.endstep-2*j), this.tetris.colors[7]);
                             }
                         } else {
-                            this.draw_box(context, program_state, -i*2, j*2, this.tetris.colors[grid[i][j]]);
+                            let t = Math.floor(program_state.animation_time);
+                            let s = (this.tetris.fullLines.includes(j)) ? 1.0 - (t - this.lineClearStart)/500 : -1;
+                            if (s < 0) s = -1;
+                            this.draw_box(context, program_state, -i*2, j*2, this.tetris.colors[grid[i][j]], s);
                         }
-                    }
+                    }   
                 }
             }
         } else {
@@ -551,7 +557,7 @@ export class Main extends Base_Scene {
             if (this.clouds[i][0][3] / this.clouds[i][3][3] >= 105){
                 this.clouds[i] = Mat4.translation(-240, 0, 0).times(this.clouds[i]);
             }else{
-                console.log(this.clouds[i][0][3] / this.clouds[i][3][3]);
+                // console.log(this.clouds[i][0][3] / this.clouds[i][3][3]);
             }
         }
 
@@ -560,6 +566,14 @@ export class Main extends Base_Scene {
 
         super.display(context, program_state);
         this.t = t;
+        if (this.lineClearStart !== 0 && t - this.lineClearStart > 500) {
+            this.tetris.isAnimating = false;
+            this.lineClearStart = 0;
+            this.tetris.clearlines();
+        }
+        if (this.tetris.isAnimating && this.lineClearStart === 0) {
+            this.lineClearStart = t;
+        }
         if (t - this.cur > 1000 || (this.buffer > 15 && this.atbottom)) {
             this.tetris.tick();
             this.cur = t;

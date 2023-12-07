@@ -23,6 +23,8 @@ export class tetris{
         this.rotation = 0;
         this.gameend = false;
         this.animate = [];
+        this.isAnimating = false;
+        this.fullLines = [];
         for(let i = 0; i < 24; i++) {
             this.animate[i] = false;
         }
@@ -105,8 +107,10 @@ export class tetris{
                 y--;
             }
         }
+        this.fullLines = []
     }
     checklines() {
+        var flag = false;
         for(let y = 0; y < 24; y++) {
             var fullLine = true;
             for(let x = 2; x < 12; x++) {
@@ -114,7 +118,12 @@ export class tetris{
                     fullLine = false;
             }
             this.animate[y] = fullLine;
+            if (fullLine) {
+                flag = true;
+                this.fullLines.push(y);
+            }
         }
+        return flag;
     }
     getblock() {
         if (this.queue.length < 6) {
@@ -147,12 +156,19 @@ export class tetris{
     }
     tick() {
         if(!this.gameend) {
+            if (this.isAnimating) {
+                return true;
+            }
             if(this.checkcollision(this.x, this.y-1, this.rotation)) {
                 this.y--;
                 return false;
             } else {
                 this.placeblock();
-                this.checklines();
+                var flag = this.checklines();
+                if (flag) {
+                    this.isAnimating = true;
+                    return true;
+                }
                 this.clearlines();
                 this.checkend();
                 return true;

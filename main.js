@@ -188,8 +188,10 @@ export class Main extends Base_Scene {
             this.starSideRotations.push(Mat4.rotation(Math.random() * 2 * Math.PI, 0, 0, 1));
         }
         this.clouds = [];
+        this.cloudsV = [];
         for(var i = 0; i < 5; i++){
-            this.clouds.push(Mat4.translation(Math.random() * 300 - 150, 40, 60).times(Mat4.scale(10, 5, 5)));
+            this.clouds.push(Mat4.translation(Math.random() * 300 - 150, 40 + Math.random() * 10, 50 + Math.random() * 20).times(Mat4.scale(10, 5, 5)));
+            this.cloudsV.push(Math.random() * 1.5 + 2);
         }
         
         this.mountainMatrices = [];
@@ -553,7 +555,7 @@ export class Main extends Base_Scene {
         this.drawStars(context, program_state);
 
         for(var i = 0; i < 5; i++){
-            this.clouds[i] = Mat4.translation(dt * 2, 0, 0).times(this.clouds[i]);
+            this.clouds[i] = Mat4.translation(dt * this.cloudsV[i], 0, 0).times(this.clouds[i]);
             if (this.clouds[i][0][3] / this.clouds[i][3][3] >= 105){
                 this.clouds[i] = Mat4.translation(-240, 0, 0).times(this.clouds[i]);
             }else{

@@ -191,7 +191,7 @@ export class Main extends Base_Scene {
         this.cloudsV = [];
         for(var i = 0; i < 5; i++){
             this.clouds.push(Mat4.translation(Math.random() * 300 - 150, 40 + Math.random() * 10, 50 + Math.random() * 20).times(Mat4.scale(10, 5, 5)));
-            this.cloudsV.push(Math.random() * 1.5 + 2);
+            this.cloudsV.push(Math.random() * 3 + 1);
         }
         
         this.mountainMatrices = [];

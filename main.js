@@ -43,24 +43,6 @@ class Cube_Outline extends Shape {
     }
 }
 
-class Cube_Single_Strip extends Shape {
-    constructor() {
-        super("position", "normal");
-        // TODO (Requirement 6)
-        this.arrays.position = Vector3.cast(
-            [-1, -1, -1], [1, -1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, -1], [-1, 1, -1], [1, 1, 1], [-1, 1, 1],
-            [-1, -1, -1], [-1, -1, 1], [-1, 1, -1], [-1, 1, 1], [1, -1, 1], [1, -1, -1], [1, 1, 1], [1, 1, -1],
-            [-1, -1, 1], [1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, -1], [-1, -1, -1], [1, 1, -1], [-1, 1, -1]);
-        this.arrays.normal = Vector3.cast(
-            [-1, -1, -1], [1, -1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, -1], [-1, 1, -1], [1, 1, 1], [-1, 1, 1],
-            [-1, -1, -1], [-1, -1, 1], [-1, 1, -1], [-1, 1, 1], [1, -1, 1], [1, -1, -1], [1, 1, 1], [1, 1, -1],
-            [-1, -1, 1], [1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, -1], [-1, -1, -1], [1, 1, -1], [-1, 1, -1]);
-        // Arrange the vertices into a square shape in texture space too:
-        this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
-            14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
-    }
-}
-
 
 class Base_Scene extends Scene {
     /**
@@ -75,7 +57,6 @@ class Base_Scene extends Scene {
         this.shapes = {
             'cube': new Cube(),
             'outline': new Cube_Outline(),
-            'cube_strip': new Cube_Single_Strip(),
             sphere: new defs.Subdivision_Sphere(4),
             circle: new defs.Regular_2D_Polygon(1, 15),
             cylinder: new defs.Capped_Cylinder(100, 100),
@@ -105,7 +86,7 @@ class Base_Scene extends Scene {
             plastic: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
             grass: new Material(new defs.Fake_Bump_Map(),
-                {color: hex_color("#000000"), ambient:1, diffusivity: 1, specularity:1, texture: new Texture("assets/mongus.png", "NEAREST")}),
+                {color: hex_color("#000000"), ambient:1, diffusivity: 1, specularity:1, texture: new Texture("assets/grass.png", "NEAREST")}),
             star: new Material(new defs.Phong_Shader(),
                 {color: hex_color("#FFFFFF"), ambient: 0}),
 
@@ -159,7 +140,7 @@ export class Main extends Base_Scene {
         self.dayTimeLeft = 20;
         self.nightTimeLeft = -1;
         self.daysLasted = 1;
-        self.nightScaling = (daysLasted + 4) ** (1.5);
+        self.nightScaling = 20;
 
         this.treeMatrices = [];
         for(var i = 0; i < 30; i++){

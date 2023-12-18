@@ -63,7 +63,6 @@ class Base_Scene extends Scene {
             cone: new defs.Closed_Cone(3, 3),
             big_cone: new defs.Closed_Cone(20, 20),
 
-            //mountain_obj: new Shape_From_File("assets/mountainpeak.obj")
             mountain_obj: new Shape_From_File("assets/part.obj"),
             star_obj: new Shape_From_File("assets/star.obj")
 
